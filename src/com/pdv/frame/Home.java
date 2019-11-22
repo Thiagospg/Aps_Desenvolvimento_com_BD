@@ -1,10 +1,15 @@
 package com.pdv.frame;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -18,6 +23,8 @@ import javax.swing.SwingConstants;
 import com.pdv.dao.ClienteDao;
 import com.pdv.dao.LocalidadeDao;
 import com.pdv.dao.ProdutoDao;
+import com.pdv.dao.VendaDao;
+
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
@@ -33,10 +40,12 @@ import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class Home {
 
-	private JFrame frame;
+	private JFrame frmPdv;
 	private JTextField txtDescricaoProduto;
 	private JTextField txtTotalCompra;
 	private JComboBox<Integer> cbCliente = new JComboBox<Integer>();
@@ -53,7 +62,8 @@ public class Home {
 			public void run() {
 				try {
 					Home window = new Home();
-					window.frame.setVisible(true);
+					window.frmPdv.setVisible(true);
+					window.frmPdv.setLocationRelativeTo(null);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -82,65 +92,81 @@ public class Home {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 438, 576);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
+		frmPdv = new JFrame();
+		frmPdv.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				
+				if(table.getRowCount() > 0) {
+					JOptionPane.showMessageDialog(null, "Antes de sair, exclua os produtos!");
+					frmPdv.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+					
+				}else {
+					frmPdv.dispose();
+				}
+			}
+		});
+
+		frmPdv.setResizable(false);
+		frmPdv.setTitle("PDV");
+		frmPdv.setBounds(100, 100, 438, 576);
+		frmPdv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmPdv.getContentPane().setLayout(null);
 
 		JLabel lblCaixaLivre = new JLabel("CAIXA LIVRE");
 		lblCaixaLivre.setBounds(10, 11, 402, 14);
 		lblCaixaLivre.setFont(new Font("Arial", Font.BOLD, 16));
 		lblCaixaLivre.setHorizontalAlignment(SwingConstants.CENTER);
 		lblCaixaLivre.setForeground(Color.BLUE);
-		frame.getContentPane().add(lblCaixaLivre);
+		frmPdv.getContentPane().add(lblCaixaLivre);
 
 		JLabel lblCliente = new JLabel("Cliente Selecionado:");
 		lblCliente.setBounds(22, 70, 176, 14);
 		lblCliente.setFont(new Font("Arial", Font.BOLD, 12));
 		lblCliente.setForeground(new Color(0, 0, 128));
-		frame.getContentPane().add(lblCliente);
+		frmPdv.getContentPane().add(lblCliente);
 		cbCliente.setBounds(22, 95, 176, 20);
-		frame.getContentPane().add(cbCliente);
+		frmPdv.getContentPane().add(cbCliente);
 
 		JLabel lblLocalVenda = new JLabel("Local de Venda:");
 		lblLocalVenda.setBounds(225, 70, 176, 14);
 		lblLocalVenda.setForeground(new Color(0, 0, 128));
 		lblLocalVenda.setFont(new Font("Arial", Font.BOLD, 12));
-		frame.getContentPane().add(lblLocalVenda);
+		frmPdv.getContentPane().add(lblLocalVenda);
 		cbLocalidade.setBounds(225, 95, 176, 20);
-		frame.getContentPane().add(cbLocalidade);
+		frmPdv.getContentPane().add(cbLocalidade);
 
 		JLabel lblCodigoDoProduto = new JLabel("Codigo do Produto:");
 		lblCodigoDoProduto.setBounds(22, 126, 176, 14);
 		lblCodigoDoProduto.setForeground(new Color(0, 0, 128));
 		lblCodigoDoProduto.setFont(new Font("Arial", Font.BOLD, 12));
-		frame.getContentPane().add(lblCodigoDoProduto);
+		frmPdv.getContentPane().add(lblCodigoDoProduto);
 		cbProduto.setBounds(22, 151, 176, 20);
 		cbProduto.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
 				setTextDescricaoProduto();
 			}
 		});
-		frame.getContentPane().add(cbProduto);
+		frmPdv.getContentPane().add(cbProduto);
 
 		JLabel lblQuantidadeProduto = new JLabel("Quantidade:");
 		lblQuantidadeProduto.setBounds(225, 126, 176, 14);
 		lblQuantidadeProduto.setForeground(new Color(0, 0, 128));
 		lblQuantidadeProduto.setFont(new Font("Arial", Font.BOLD, 12));
-		frame.getContentPane().add(lblQuantidadeProduto);
+		frmPdv.getContentPane().add(lblQuantidadeProduto);
 
 		JLabel lblDescricaoProduto = new JLabel("Descricao do Produto:");
 		lblDescricaoProduto.setBounds(22, 182, 135, 14);
 		lblDescricaoProduto.setForeground(new Color(0, 0, 128));
 		lblDescricaoProduto.setFont(new Font("Arial", Font.BOLD, 12));
-		frame.getContentPane().add(lblDescricaoProduto);
+		frmPdv.getContentPane().add(lblDescricaoProduto);
 
 		txtDescricaoProduto = new JTextField();
 		txtDescricaoProduto.setBounds(22, 207, 379, 20);
 		txtDescricaoProduto.setFont(new Font("Tahoma", Font.BOLD, 13));
 		txtDescricaoProduto.setEditable(false);
 		txtDescricaoProduto.setHorizontalAlignment(SwingConstants.CENTER);
-		frame.getContentPane().add(txtDescricaoProduto);
+		frmPdv.getContentPane().add(txtDescricaoProduto);
 		txtDescricaoProduto.setColumns(10);
 
 		JButton btnVender = new JButton("Vender");
@@ -201,7 +227,7 @@ public class Home {
 			}
 		});
 		btnVender.setFont(new Font("Arial", Font.PLAIN, 11));
-		frame.getContentPane().add(btnVender);
+		frmPdv.getContentPane().add(btnVender);
 
 		JButton btnExcluir = new JButton("Excluir");
 		btnExcluir.addActionListener(new ActionListener() {
@@ -240,37 +266,76 @@ public class Home {
 		});
 		btnExcluir.setBounds(151, 414, 138, 23);
 		btnExcluir.setFont(new Font("Arial", Font.PLAIN, 11));
-		frame.getContentPane().add(btnExcluir);
+		frmPdv.getContentPane().add(btnExcluir);
 
 		JLabel lblNewLabel = new JLabel("Produto");
 		lblNewLabel.setBounds(10, 276, 71, 14);
-		frame.getContentPane().add(lblNewLabel);
+		frmPdv.getContentPane().add(lblNewLabel);
 
 		JLabel lblTotalCompra = new JLabel("Total da Compra:");
 		lblTotalCompra.setBounds(165, 469, 101, 14);
 		lblTotalCompra.setForeground(new Color(0, 0, 128));
 		lblTotalCompra.setFont(new Font("Arial", Font.BOLD, 12));
-		frame.getContentPane().add(lblTotalCompra);
+		frmPdv.getContentPane().add(lblTotalCompra);
 
 		txtTotalCompra = new JTextField();
 		txtTotalCompra.setBounds(303, 467, 109, 20);
 		txtTotalCompra.setEditable(false);
 		txtTotalCompra.setFont(new Font("Arial", Font.PLAIN, 12));
-		frame.getContentPane().add(txtTotalCompra);
+		frmPdv.getContentPane().add(txtTotalCompra);
 		txtTotalCompra.setColumns(10);
 
 		JButton btnFecharCompra = new JButton("Fechar Compra");
+		btnFecharCompra.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+
+				int clienteSelecionado = 0;
+				int codigoProduto = 0;
+				int localVenda = 0;
+				int quantidade = 0;
+				double valorTotalCompra = 0;
+
+				Date data = new Date();
+
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String dataVenda = sdf.format(data);
+
+				if (!txtTotalCompra.getText().isEmpty() && txtTotalCompra.getText() != "0.0") {
+
+					try {
+						clienteSelecionado = (Integer) (cbCliente.getSelectedItem());
+						codigoProduto = (Integer) (cbProduto.getSelectedItem());
+						localVenda = (Integer) (cbLocalidade.getSelectedItem());
+						quantidade = (Integer) (spinnerQuantidade.getValue());
+						valorTotalCompra = Double.parseDouble(txtTotalCompra.getText());
+
+						VendaDao dao = new VendaDao();
+						dao.addVenda(clienteSelecionado, codigoProduto, localVenda, quantidade, valorTotalCompra,
+								dataVenda);
+
+						JOptionPane.showMessageDialog(null, "Venda efetuada e salva com sucesso!");
+						limparCampos();
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
+				} else {
+
+				}
+			}
+		});
 		btnFecharCompra.setBounds(10, 503, 402, 23);
-		frame.getContentPane().add(btnFecharCompra);
+		frmPdv.getContentPane().add(btnFecharCompra);
 
 		spinnerQuantidade.setBounds(225, 151, 176, 20);
 		spinnerQuantidade.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
-		frame.getContentPane().add(spinnerQuantidade);
+		frmPdv.getContentPane().add(spinnerQuantidade);
 
 		JScrollPane scrollPane = new JScrollPane();
 
 		scrollPane.setBounds(10, 327, 402, 71);
-		frame.getContentPane().add(scrollPane);
+		frmPdv.getContentPane().add(scrollPane);
 
 		table = new JTable();
 		table.setDefaultEditor(Object.class, null);
@@ -280,8 +345,7 @@ public class Home {
 		table.getColumnModel().getColumn(1).setPreferredWidth(178);
 		table.getColumnModel().getColumn(2).setPreferredWidth(120);
 		table.getColumnModel().getColumn(3).setPreferredWidth(134);
-		
-		
+
 		scrollPane.setViewportView(table);
 	}
 
@@ -335,6 +399,21 @@ public class Home {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+	}
+
+	private void limparCampos() {
+		cbCliente.setSelectedIndex(0);
+		cbLocalidade.setSelectedIndex(0);
+		cbProduto.setSelectedIndex(0);
+		spinnerQuantidade.setValue(1);
+		txtTotalCompra.setText("0.0");
+		DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+		for (int i = 0; i < table.getRowCount(); i++) {
+			model.removeRow(i);
+		}
+		setTextDescricaoProduto();
 
 	}
 }
