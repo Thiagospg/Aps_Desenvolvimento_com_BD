@@ -62,7 +62,7 @@ public class ProdutoDao {
 
 	}
 
-	public Integer updateQuantidadeById(Integer id, Integer quantidadeComprada)
+	public Integer updateQuantidadeById(Integer id, Integer quantidade, char operacao)
 			throws ClassNotFoundException, SQLException {
 		Connection con = ConexaoBd.conectar();
 
@@ -70,7 +70,16 @@ public class ProdutoDao {
 
 		PreparedStatement stmt = con.prepareStatement("UPDATE Produto SET qtdestoque = ? WHERE codprod = ?");
 
-		stmt.setInt(1, qtdAtual - quantidadeComprada);
+		switch (operacao) {
+		case '+':
+			stmt.setInt(1, qtdAtual + quantidade);
+			break;
+
+		case '-':
+			stmt.setInt(1, qtdAtual - quantidade);
+			break;
+		}
+
 		stmt.setInt(2, id);
 
 		return stmt.executeUpdate();
@@ -87,10 +96,16 @@ public class ProdutoDao {
 
 	public String vender(Integer id, Integer quantidadeComprada) throws ClassNotFoundException, SQLException {
 		if (checkVenda(id, quantidadeComprada)) {
-			updateQuantidadeById(id, quantidadeComprada);
+			updateQuantidadeById(id, quantidadeComprada, '-');
 			return "Produto adicionado!";
 		} else {
 			return "Produto sem estoque!";
 		}
 	}
+
+	public String excluir(Integer id, Integer quantidade) throws ClassNotFoundException, SQLException {
+		updateQuantidadeById(id, quantidade, '+');
+		return "Produto excluido!";
+	}
+
 }

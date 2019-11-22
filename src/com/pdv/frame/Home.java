@@ -166,13 +166,13 @@ public class Home {
 
 						DefaultTableModel model = (DefaultTableModel) table.getModel();
 
-						model.addRow(new Object[] { dao.getDescPrecoById(id)[0], quantidadeComprada,
+						model.addRow(new Object[] { id, dao.getDescPrecoById(id)[0], quantidadeComprada,
 								dao.getDescPrecoById(id)[1],
 								(Double.parseDouble(dao.getDescPrecoById(id)[1]) * quantidadeComprada) });
 
 						double valorTotal = 0;
 						for (int i = 0; i < table.getRowCount(); i++) {
-							double valor = (double) table.getValueAt(i, 3);
+							double valor = (double) table.getValueAt(i, 4);
 							valorTotal = +valor;
 						}
 
@@ -180,14 +180,14 @@ public class Home {
 							txtTotalCompra.setText(String.valueOf(valorTotal));
 						} else {
 							double valor = Double.parseDouble(txtTotalCompra.getText());
-							txtTotalCompra.setText(String.valueOf(valor+valorTotal));
+							txtTotalCompra.setText(String.valueOf(valor + valorTotal));
 
 						}
 
 						break;
 
 					case "Produto sem estoque!":
-						JOptionPane.showMessageDialog(null, "Produto sem estoque");
+						JOptionPane.showMessageDialog(null, "Produto sem estoque!");
 						break;
 					default:
 						JOptionPane.showMessageDialog(null, "SQL Errado");
@@ -206,8 +206,36 @@ public class Home {
 		JButton btnExcluir = new JButton("Excluir");
 		btnExcluir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
-				
+
+				Integer id = 0;
+				int quantidadeItem = 0;
+				double valorTotalItem = 0;
+				double valorTotalCompra = 0;
+
+				ProdutoDao dao = new ProdutoDao();
+
+				DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+				try {
+					id = (Integer) table.getValueAt(table.getSelectedRow(), 0);
+					quantidadeItem = (int) table.getValueAt(table.getSelectedRow(), 2);
+					valorTotalItem = (double) table.getValueAt(table.getSelectedRow(), 4);
+					valorTotalCompra = Double.parseDouble(txtTotalCompra.getText());
+
+					dao.excluir(id, quantidadeItem);
+
+					model.removeRow(table.getSelectedRow());
+					txtTotalCompra.setText(String.valueOf(valorTotalCompra - valorTotalItem));
+				} catch (ArrayIndexOutOfBoundsException e) {
+					JOptionPane.showMessageDialog(null, "Selecione um produto primeiro!");
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
 			}
 		});
 		btnExcluir.setBounds(151, 414, 138, 23);
@@ -245,12 +273,15 @@ public class Home {
 		frame.getContentPane().add(scrollPane);
 
 		table = new JTable();
+		table.setDefaultEditor(Object.class, null);
 		table.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "Produto", "Quantidade", "Pre\u00E7o Unit\u00E1rio", "Valor Total" }));
-		table.getColumnModel().getColumn(0).setPreferredWidth(199);
-		table.getColumnModel().getColumn(1).setPreferredWidth(111);
+				new String[] { "ID", "Produto", "Quantidade", "Pre\u00E7o Unit\u00E1rio", "Total" }));
+		table.getColumnModel().getColumn(0).setPreferredWidth(39);
+		table.getColumnModel().getColumn(1).setPreferredWidth(178);
 		table.getColumnModel().getColumn(2).setPreferredWidth(120);
 		table.getColumnModel().getColumn(3).setPreferredWidth(134);
+		
+		
 		scrollPane.setViewportView(table);
 	}
 
